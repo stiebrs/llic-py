@@ -5,6 +5,8 @@ from enum import Enum
 import logging
 
 # address mappings
+from commons import merge_bytes
+
 CMD_REFRESH = 0x00
 REG_CTRL = 0x01
 REG_ACC_COUNT = 0x02
@@ -74,7 +76,7 @@ class PAC193x:
 		if (0x59 <= data[0] <= 0x5B) and (data[1] == 0x5D) and (data[2] == 0x03):
 			self.revision = Revision(data[0])
 			return True, self.revision
-		self.log.error('Could not find PAC192x with given address!')
+		self.log.error('Could not find PAC193x with given address!')
 		return False
 
 	# shunt resistor values are used for current calculations
@@ -135,15 +137,13 @@ class PAC193x:
 		self._write_fn(reg, data)
 
 
-def _merge_bytes(arr):
-	return arr[0] << 8 | arr[1]
-
 def _parse_voltage(data):
-	adc_val = _merge_bytes(data)
+	adc_val = merge_bytes(data)
 	return adc_val / pow(2, 16) * 32
 
+
 def _parse_current(data):
-	adc_val = _merge_bytes(data)
+	adc_val = merge_bytes(data)
 	fsc = 0.1/1.0
 	current = fsc * adc_val / pow(2, 16)
 	return current

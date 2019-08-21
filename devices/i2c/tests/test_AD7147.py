@@ -63,6 +63,7 @@ try:
 	stage.commit()
 	while (1):
 		print(stage.read_value())
+		print(stage.read_value_raw())
 		time.sleep(1)
 finally:
 	i2cController.terminate()

@@ -14,7 +14,7 @@ IC expects particular start-up sequence:
 from enum import Enum
 import logging
 
-from commons import merge_bytes, set_bits_in_byte_16
+from utils import merge_bytes, set_bits_in_byte_16
 
 I2C_ADDRESS_BASE = 0x2c
 I2C_ADDRESS_COUNT = 4
@@ -24,6 +24,7 @@ REG_PWR_CONTROL = 0x0000
 REG_CHIP_ID = 0x017
 REG_STAGE_CONFIG_BASE = 0x080
 REG_STAGE_RESULT_BASE = 0x00B
+REG_STAGE_RESULT_RAW_BASE = 0x0E0
 
 
 class AD7147:
@@ -83,14 +84,16 @@ class AD7147:
 				conn_reg_lo = set_bits_in_byte_16(conn_reg_lo, p._pin_no*2, p._connection_type.value, target_width=2)
 			else:
 				conn_reg_hi = set_bits_in_byte_16(conn_reg_hi, (p._pin_no-7)*2, p._connection_type.value, target_width=2)
-			print("LO:{0:b}".format(conn_reg_lo))
-			print("HI:{0:b}".format(conn_reg_hi))
 		out = [conn_reg_lo >> 8, conn_reg_lo & 0xFF, conn_reg_hi >> 8, conn_reg_hi & 0xFF]
 		self._write_reg(stage_base_address, out)
 
 	def read_stage_value(self, stage):
 		stage_address = REG_STAGE_RESULT_BASE + stage._id
 		return merge_bytes(self._read_reg(stage_address, 2))
+
+	def read_stage_value_raw(self, stage):
+		stage_address_raw = REG_STAGE_RESULT_RAW_BASE + stage._id *36
+		return merge_bytes(self._read_reg(stage_address_raw, 2))
 
 	def _update_power_reg(self):
 		reg = 0
@@ -199,6 +202,8 @@ class Stage:
 	def read_value(self):
 		return self._ic.read_stage_value(self)
 
+	def read_value_raw(self):
+		return self._ic.read_stage_value_raw(self)
 
 	class StagePin:
 		class ConnectionType(Enum):

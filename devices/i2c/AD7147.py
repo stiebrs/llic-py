@@ -14,7 +14,7 @@ IC expects particular start-up sequence:
 from enum import Enum
 import logging
 
-from utils import merge_bytes, set_bits_in_byte_16
+from devices.utils import merge_bytes, set_bits_in_byte_16
 
 I2C_ADDRESS_BASE = 0x2c
 I2C_ADDRESS_COUNT = 4
@@ -25,7 +25,9 @@ REG_CHIP_ID = 0x017
 REG_STAGE_CONFIG_BASE = 0x080
 REG_STAGE_RESULT_BASE = 0x00B
 REG_STAGE_RESULT_RAW_BASE = 0x0E0
-
+REG_STAGE_RESULT_AVG_MAX = 0x0F9
+REG_STAGE_RESULT_AVG_MIN = 0x100
+REG_STAGE_RESULT_SF_AMBIENT = 0x0F2
 
 class AD7147:
 	readFn = None
@@ -94,6 +96,19 @@ class AD7147:
 	def read_stage_value_raw(self, stage):
 		stage_address_raw = REG_STAGE_RESULT_RAW_BASE + stage._id *36
 		return merge_bytes(self._read_reg(stage_address_raw, 2))
+
+	def read_stage_value_avg_max(self, stage):
+		addr = REG_STAGE_RESULT_AVG_MAX + stage._id *36
+		return merge_bytes(self._read_reg(addr, 2))
+
+	def read_stage_value_avg_min(self, stage):
+		addr = REG_STAGE_RESULT_AVG_MIN + stage._id *36
+		return merge_bytes(self._read_reg(addr, 2))
+
+	def read_stage_value_slow_fifo_ambient(self, stage):
+		addr = REG_STAGE_RESULT_SF_AMBIENT + stage._id *36
+		return merge_bytes(self._read_reg(addr, 2))
+
 
 	def _update_power_reg(self):
 		reg = 0
@@ -205,6 +220,15 @@ class Stage:
 	def read_value_raw(self):
 		return self._ic.read_stage_value_raw(self)
 
+	# no idea what these 3 should do, but seem to contain static numbers
+	def read_value_avg_min(self):
+		return self._ic.read_stage_value_avg_min(self)
+
+	def read_value_avg_max(self):
+		return self._ic.read_stage_value_avg_max(self)
+
+	def read_slow_ambient(self):
+		return self._ic.read_stage_value_slow_fifo_ambient(self)
 	class StagePin:
 		class ConnectionType(Enum):
 			NOT_CONNECTED = 0b00

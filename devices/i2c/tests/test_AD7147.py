@@ -56,14 +56,13 @@ try:
 	pins = list([
 		Stage.StagePin(0, Stage.StagePin.ConnectionType.SINGLE_ENDED_POSITIVE),
 		Stage.StagePin(1, Stage.StagePin.ConnectionType.SINGLE_ENDED_NEGATIVE),
-		Stage.StagePin(12, Stage.StagePin.ConnectionType.SINGLE_ENDED_NEGATIVE),
+		# Stage.StagePin(12, Stage.StagePin.ConnectionType.SINGLE_ENDED_NEGATIVE),
 	])
 	stage.assign_pins(pins)
 	stage.setup_connection(Stage.ConnectionMode.DIFFERENTIAL)
 	stage.commit()
 	while (1):
-		print(stage.read_value())
-		print(stage.read_value_raw())
+		print(stage.read_value(), stage.read_value_raw(), stage.read_value_avg_min(), stage.read_value_avg_max(), stage.read_slow_ambient())
 		time.sleep(1)
 finally:
 	i2cController.terminate()

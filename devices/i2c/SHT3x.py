@@ -57,7 +57,7 @@ class SHT3x:
 
 	def _writeReg(self, cmd):
 		self._log.debug('>: [%s]', hex(cmd))
-		self._writeFn([cmd >> 8, cmd & 0xFF])
+		self._writeFn(None, [cmd >> 8, cmd & 0xFF])
 
 def crc8(buffer):
 	""" Polynomial 0x31 (x8 + x5 +x4 +1) """

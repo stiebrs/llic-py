@@ -27,6 +27,12 @@ class AD5689:
         DAC_B = 0x08
         DAC_BOTH = (DAC_A | DAC_B)
 
+    class DAC_PowerDownMode(Enum):
+        POWER_DOWN_MODE_ON = 0x00
+        POWER_DOWN_MODE_1k_TO_GND = 0x01
+        POWER_DOWN_MODE_100k_TO_GND = 0x02
+        POWER_DOWN_MODE_FLOATING = 0x03
+
     _write_fn = None
     _gain = None
 
@@ -44,6 +50,15 @@ class AD5689:
 
     def enable_internal_ref(self, enable=True):
         self._write_data(AD5689.DAC_Command.CMD_ENABLE_INTERNAL_REF, 0x00, enable)
+
+    def power_down_channel(self, channel, power_down_mode=DAC_PowerDownMode.POWER_DOWN_MODE_100k_TO_GND):
+        val = 0x000
+        if channel.value & AD5689.DAC_Channel.DAC_B.value:
+            val = (power_down_mode.value << 6)
+        if channel.value & AD5689.DAC_Channel.DAC_A.value:
+            val |= power_down_mode.value
+        val |= (0x7 << 2)
+        self._write_data(AD5689.DAC_Command.CMD_PWR_UP_DOWN, AD5689.DAC_Channel.DAC_BOTH, val)
 
     def set_channel_and_update(self, channel, voltage):
         self._write_data(AD5689.DAC_Command.CMD_WRITE_AND_UPDATE_N, channel, int(voltage/self._lsb))
